@@ -17,13 +17,13 @@ graph LR
     FastAPI --> Agent[LangChain Pipeline]
     
     subgraph Agent Pipeline
-        Strategist[1. Strategist] --> Searcher[2. Searcher]
-        Searcher -- Tavily --> Verifier[3. Verifier]
-        Verifier --> Evaluator[4. Evaluator (LLM)]
+        Strategist["1. Strategist"] --> Searcher["2. Searcher"]
+        Searcher -- Tavily --> Verifier["3. Verifier"]
+        Verifier --> Evaluator["4. Evaluator (LLM)"]
     end
     
-    Agent --> Postgres[(PostgreSQL DB)]
-    Agent --> Redis[(Rate Limiter)]
+    Agent --> Postgres[("PostgreSQL DB")]
+    Agent --> Redis[("Rate Limiter")]
 ```
 
 ## The Agent Pipeline
