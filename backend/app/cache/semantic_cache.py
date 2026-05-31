@@ -26,7 +26,7 @@ def generate_profile_string(profile: dict) -> str:
     """Creates a deterministic string representation of a profile for embedding."""
     return f"Branch: {profile.get('branch')} Year: {profile.get('year')} Interests: {' '.join(profile.get('interests', []))} Goal: {profile.get('goal')}"
 
-def check_cache(profile: dict, threshold: float = 0.5) -> Optional[OpportunityList]:
+def check_cache(profile: dict, threshold: float = 0.1) -> Optional[OpportunityList]:
     """Checks if a semantically similar profile was searched recently."""
     if not CACHE_ENABLED or index.ntotal == 0:
         return None
