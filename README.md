@@ -74,6 +74,3 @@ npm install
 npm run dev
 ```
 Navigate to `http://localhost:3000`.
-
-## Live Demo
-[Live Demo Link (Vercel)](https://your-app.vercel.app)
