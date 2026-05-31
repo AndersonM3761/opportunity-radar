@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+langchain
+langchain-google-genai
+langchain-community
+tavily-python
+pydantic
+python-dotenv
+sentence-transformers
+faiss-cpu
+onnxruntime
+redis
+httpx
+psycopg2-binary
