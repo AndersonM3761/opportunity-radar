@@ -16,5 +16,6 @@ sqlalchemy
 alembic
 asyncpg
 greenlet
-dateparser
+python-dateutil
 fakeredis
+resend

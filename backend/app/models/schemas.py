@@ -34,3 +34,6 @@ class SaveOpportunityRequest(BaseModel):
     email: str
     url: str
     status: str
+
+class EmailRequest(BaseModel):
+    email: str

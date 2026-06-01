@@ -48,7 +48,7 @@ export default function Home() {
   const [savedEmailSuccess, setSavedEmailSuccess] = useState(false);
   const [savedOpportunities, setSavedOpportunities] = useState<any[]>([]);
   const [showSaved, setShowSaved] = useState(false);
-
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
   const branchRef = useRef<HTMLDivElement>(null);
   const skillRef = useRef<HTMLDivElement>(null);
 
@@ -232,8 +232,37 @@ export default function Home() {
       setSavedEmailSuccess(true);
       fetchSavedOpportunities(emailToSave);
       localStorage.setItem("radar_email", emailToSave);
+      
+      // Attempt to send email immediately when registering email (if they have saved opps)
+      if (savedOpportunities.length > 0) {
+        handleTriggerEmail(emailToSave);
+      }
     } else {
       alert("Please enter a valid email address.");
+    }
+  };
+
+  const handleTriggerEmail = async (emailAddr: string) => {
+    if (!emailAddr || !isValidEmail(emailAddr)) return;
+    setIsSendingEmail(true);
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const res = await fetch(`${apiUrl}/api/v1/send-saved-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: emailAddr })
+      });
+      if (res.ok) {
+        alert("Success! Your saved opportunities have been sent to your email.");
+      } else {
+        const errorData = await res.json();
+        alert(`Failed to send email: ${errorData.detail || "Unknown error"}`);
+      }
+    } catch (e) {
+      console.error("Failed to trigger email", e);
+      alert("Failed to send email. Check your connection.");
+    } finally {
+      setIsSendingEmail(false);
     }
   };
 
@@ -515,6 +544,32 @@ export default function Home() {
                     </div>
                   </div>
                 ))}
+                
+                {/* Email Trigger Section */}
+                <div className="mt-8 pt-6 border-t border-gray-700 text-center">
+                  <p className="text-sm text-gray-400 mb-4">Want these in your inbox so you don't lose them?</p>
+                  <button 
+                    onClick={() => handleTriggerEmail(emailToSave)}
+                    disabled={!emailToSave || isSendingEmail || savedOpportunities.length === 0}
+                    className="bg-emerald-600 hover:bg-emerald-500 disabled:bg-gray-700 disabled:text-gray-500 text-white font-semibold py-2 px-6 rounded-lg transition-colors flex items-center gap-2 mx-auto"
+                  >
+                    {isSendingEmail ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                        Email Me My List
+                      </>
+                    )}
+                  </button>
+                  {!emailToSave && (
+                    <p className="text-xs text-red-400 mt-2">Please register your email in the left panel first.</p>
+                  )}
+                </div>
+
                 <div className="border-t-2 border-dashed border-gray-700 my-8"></div>
               </div>
             )}
