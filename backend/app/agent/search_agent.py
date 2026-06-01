@@ -160,7 +160,9 @@ Return your answer strictly matching the required JSON schema."""
         
     context_parts = []
     for r in verified_results:
-        context_parts.append(f"Query: {r.get('query_used', '')}\nURL: {r.get('url')}\nContent: {r.get('content')}\nDeadline Status: {r.get('deadline_status')}")
+        # TRUNCATE to 1500 chars to avoid hitting Gemini 1M TPM rate limit on free tier!
+        content_snippet = r.get('content', '')[:1500] 
+        context_parts.append(f"Query: {r.get('query_used', '')}\nURL: {r.get('url')}\nContent: {content_snippet}\nDeadline Status: {r.get('deadline_status')}")
     context = "\n---\n".join(context_parts)
     
     allowed_types = ", ".join(categories)
@@ -235,4 +237,6 @@ Return the valid opportunities formatted as a JSON list."""
         return result
     except Exception as e:
         print(f"Error in Evaluator after retries: {e}")
+        if "429" in str(e) or "exhausted" in str(e).lower():
+            raise ValueError("RATE_LIMIT_EXCEEDED")
         return OpportunityList(opportunities=[], queries_used=queries)

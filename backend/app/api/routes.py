@@ -24,7 +24,13 @@ async def search(request: SearchRequest, db: Session = Depends(get_db)):
         return cached_result
         
     # 2. Process via AI Agent Pipeline
-    result = await process_profile(profile_dict)
+    try:
+        result = await process_profile(profile_dict)
+    except ValueError as e:
+        if str(e) == "RATE_LIMIT_EXCEEDED":
+            from fastapi import HTTPException
+            raise HTTPException(status_code=429, detail="AI provider rate limit reached. Please wait a minute and try again.")
+        raise e
     
     # 3. Store in DB (Persistence)
     if len(result.opportunities) > 0:
