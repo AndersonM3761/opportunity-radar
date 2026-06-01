@@ -5,8 +5,11 @@ from sqlalchemy.ext.declarative import declarative_base
 import os
 
 # Use DATABASE_URL if provided, else fallback to local sqlite
-SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./radar.db")
+database_url = os.getenv("DATABASE_URL", "sqlite:///./radar.db")
+if database_url.startswith("postgres://"):
+    database_url = database_url.replace("postgres://", "postgresql://", 1)
 
+SQLALCHEMY_DATABASE_URL = database_url
 # Only check same thread if using sqlite
 connect_args = {"check_same_thread": False} if SQLALCHEMY_DATABASE_URL.startswith("sqlite") else {}
 
