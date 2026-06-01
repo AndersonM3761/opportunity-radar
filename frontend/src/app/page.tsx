@@ -249,7 +249,7 @@ export default function Home() {
       <div className="max-w-6xl mx-auto">
         <header className="mb-10 text-center space-y-3">
           <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
-            Opportunity Radar
+            1waygo
           </h1>
           <p className="text-gray-400 text-base md:text-lg">Find high-impact opportunities that match your exact profile.</p>
         </header>
@@ -670,6 +670,15 @@ export default function Home() {
             )}
           </div>
         </div>
+        
+        {/* FOOTER - Credibility & Ownership */}
+        <footer className="mt-16 pb-8 text-center text-gray-500 text-sm border-t border-gray-800 pt-8">
+          <p>
+            Built by <span className="font-semibold text-gray-400">Anderson</span>. 
+            Powered by Gemini 2.5 Flash & Next.js.
+          </p>
+          <p className="mt-1 text-xs opacity-60">© 2026 1waygo. All rights reserved.</p>
+        </footer>
       </div>
     </div>
   );

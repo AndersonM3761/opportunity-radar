@@ -4,10 +4,10 @@ from app.agent.search_agent import process_profile
 
 async def main():
     profile = {
-        "branch": "Computer Science Engineering",
-        "year": "2nd Year",
-        "interests": "Machine Learning, Computer Vision",
-        "goal": "Software Engineer",
+        "branch": "Mechatronics Engineering",
+        "year": "3rd Year",
+        "interests": "Embedded Systems, PCB Design, PLC / HMI / SCADA",
+        "goal": "Core / Hardware Engineer",
         "mode": "Any",
         "duration": "Any",
         "location": "",
@@ -15,10 +15,11 @@ async def main():
         "categories": ["Hackathon", "Internship", "Certification", "Competition"]
     }
     print("Running process_profile...")
-    result = await process_profile(profile)
-    print(f"Generated {len(result.opportunities)} opportunities")
-    for opp in result.opportunities:
-        print(f"- {opp.name} ({opp.deadline})")
+    try:
+        result = await process_profile(profile)
+        print(f"Generated {len(result.opportunities)} opportunities")
+    except Exception as e:
+        print(f"FAILED WITH EXCEPTION: {e}")
 
 if __name__ == "__main__":
     import sys
