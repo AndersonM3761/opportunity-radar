@@ -46,6 +46,8 @@ export default function Home() {
   const [actionStatuses, setActionStatuses] = useState<{[key: string]: string}>({});
   const [emailToSave, setEmailToSave] = useState("");
   const [savedEmailSuccess, setSavedEmailSuccess] = useState(false);
+  const [savedOpportunities, setSavedOpportunities] = useState<any[]>([]);
+  const [showSaved, setShowSaved] = useState(false);
 
   const branchRef = useRef<HTMLDivElement>(null);
   const skillRef = useRef<HTMLDivElement>(null);
@@ -63,12 +65,21 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const saved = localStorage.getItem("radar_action_statuses");
-    if (saved) {
+    const savedStatus = localStorage.getItem("radar_action_statuses");
+    if (savedStatus) {
       try {
-        setActionStatuses(JSON.parse(saved));
+        setActionStatuses(JSON.parse(savedStatus));
       } catch (e) {
         console.error("Failed to parse local storage", e);
+      }
+    }
+    
+    const savedOpps = localStorage.getItem("savedOpportunities");
+    if (savedOpps) {
+      try {
+        setSavedOpportunities(JSON.parse(savedOpps));
+      } catch (e) {
+        console.error("Failed to parse saved opportunities", e);
       }
     }
   }, []);
@@ -152,6 +163,24 @@ export default function Home() {
       const updated = {...actionStatuses, [id]: newStatus};
       setActionStatuses(updated);
       localStorage.setItem("radar_action_statuses", JSON.stringify(updated));
+  };
+
+  const handleSaveOpp = (opp: any) => {
+    const isCurrentlySaved = actionStatuses[opp.name] === "saved";
+    const newStatus = isCurrentlySaved ? "" : "saved";
+    updateStatus(opp.name, newStatus);
+
+    let updatedSaved = [...savedOpportunities];
+    if (newStatus === "saved") {
+      if (!updatedSaved.some(o => o.name === opp.name)) {
+        updatedSaved.push(opp);
+      }
+    } else {
+      updatedSaved = updatedSaved.filter(o => o.name !== opp.name);
+    }
+    
+    setSavedOpportunities(updatedSaved);
+    localStorage.setItem("savedOpportunities", JSON.stringify(updatedSaved));
   };
 
   const handleSaveEmail = () => {
@@ -382,6 +411,67 @@ export default function Home() {
           {/* Right Panel: Results & Agent Logs */}
           <div className="md:col-span-2 space-y-4">
             
+            {/* View Saved Toggle */}
+            {savedOpportunities.length > 0 && (
+              <div className="flex justify-end mb-2">
+                <button 
+                  onClick={() => setShowSaved(!showSaved)}
+                  className="bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold py-2 px-4 rounded-lg border border-gray-700 transition-colors flex items-center gap-2"
+                >
+                  🔖 {showSaved ? "Hide Saved" : `View Saved (${savedOpportunities.length})`}
+                </button>
+              </div>
+            )}
+            
+            {showSaved && (
+              <div className="space-y-4 mb-8">
+                <h3 className="text-xl font-bold text-emerald-400 border-b border-gray-700 pb-2 mb-4">Saved Opportunities</h3>
+                {savedOpportunities.map((opp, idx) => (
+                  <div key={`saved-${idx}`} className="bg-gray-800 p-5 rounded-2xl border border-emerald-500/50 shadow-lg relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500"></div>
+                    <div className="flex justify-between items-start mb-3 pl-3">
+                      <div className="space-y-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="inline-block px-2.5 py-0.5 bg-gray-900 border border-gray-700 rounded-full text-xs font-semibold text-emerald-400 uppercase tracking-wider">
+                            {categoryIcons[opp.type] || "📌"} {opp.type}
+                          </span>
+                        </div>
+                        <h3 className="text-lg font-bold text-white">{opp.name}</h3>
+                      </div>
+                      <span className="text-xs font-medium text-gray-400 bg-gray-900 px-2.5 py-1 rounded-lg border border-gray-700 whitespace-nowrap ml-3">
+                        ⏱ {opp.deadline}
+                      </span>
+                    </div>
+                    
+                    <div className="pl-3 mb-3 space-y-2">
+                      <p className="text-xs text-gray-500">Time Commitment: <span className="text-gray-400">{opp.time_commitment}</span></p>
+                      {opp.description && (
+                        <p className="text-sm text-gray-300 leading-relaxed">{opp.description}</p>
+                      )}
+                    </div>
+                    
+                    <div className="flex items-center justify-between pl-3 pt-3 border-t border-gray-700">
+                      <button 
+                        onClick={() => handleSaveOpp(opp)}
+                        className="text-xs px-3 py-1.5 rounded-md font-medium transition-all duration-200 bg-red-900/30 text-red-400 hover:bg-red-900/50"
+                      >
+                        Remove from Saved
+                      </button>
+                      <a 
+                        href={opp.link} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-sm font-semibold text-blue-400 hover:text-blue-300 transition-colors"
+                      >
+                        Apply Now <span>→</span>
+                      </a>
+                    </div>
+                  </div>
+                ))}
+                <div className="border-t-2 border-dashed border-gray-700 my-8"></div>
+              </div>
+            )}
+            
             {/* Agent's Brain / Search Strategy UI */}
             {(status === "done" && queriesUsed.length > 0) && (
                <div className="bg-gray-900 border border-emerald-500/30 p-4 rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.1)]">
@@ -472,7 +562,7 @@ export default function Home() {
                 <div className="flex items-center justify-between pl-3 pt-3 border-t border-gray-700">
                   <div className="flex gap-2">
                     <button 
-                      onClick={() => updateStatus(opp.name, actionStatuses[opp.name] === "saved" ? "" : "saved")}
+                      onClick={() => handleSaveOpp(opp)}
                       className={`text-xs px-3 py-1.5 rounded-md font-medium transition-all duration-200 ${actionStatuses[opp.name] === "saved" ? "bg-blue-600 text-white shadow-md shadow-blue-500/20" : "bg-gray-700 hover:bg-gray-600 text-gray-300"}`}
                     >
                       {actionStatuses[opp.name] === "saved" ? "✓ Saved" : "Save"}
