@@ -16,10 +16,10 @@ async def check_rate_limit(request: SearchRequest, redis_db = Depends(get_redis)
         if exists:
             raise HTTPException(
                 status_code=429,
-                detail={"error": "Rate limited. Only one search per 10 minutes allowed.", "retry_after": 600}
+                detail={"error": "Rate limited. Please wait 5 seconds before searching again.", "retry_after": 5}
             )
-        # Block for 10 minutes (600 seconds)
-        await redis_db.setex(key, 600, "1")
+        # Block for 5 seconds
+        await redis_db.setex(key, 5, "1")
     except HTTPException:
         # Re-raise the 429 so the user is actually blocked
         raise

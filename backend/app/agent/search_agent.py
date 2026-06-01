@@ -202,7 +202,16 @@ Always return a minimum of 3 results. If truly nothing exists,
 return the 3 closest matches with a note explaining the partial match in the `reason` field.
 Never return zero results.
 
-For EACH opportunity:
+TASK:
+Review the verified search results above. Filter them down to the absolute best matches for this specific student's profile.
+If a result is completely irrelevant or low quality, IGNORE IT.
+
+HIGH-VALUE CRITERIA TO ENFORCE:
+1. Hackathons & Competitions: Is there evidence of prestige, history (e.g. held every year), or significant presence/reliable hosts that have track records of pushing careers forward? If it looks like a low-effort or spammy hackathon, DROP IT.
+2. Internships: Is it from a trustworthy, recognizable company? OR, if it's from a smaller startup, does the description prove it offers REAL value, mentorship, and tangible skill-building for their career path? (Since not everyone gets into FAANG, high-value startups are great, but cheap labor disguised as internships should be DROPPED).
+3. Certifications: Only keep certifications that carry actual industry weight and respect.
+
+If a result passes these strict checks, format it as a JSON object matching the OpportunityList schema.
 - `description`: 2-3 sentences explaining what the program is, what participants do, eligibility, and what they gain.
 - `reason`: ONE sentence connecting this to their specific {branch} background, {year} year status, and career goal. (Or explaining why it was included as a fallback match).
 
