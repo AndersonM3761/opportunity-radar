@@ -16,7 +16,7 @@ def get_llm():
     return ChatGoogleGenerativeAI(model="gemini-2.5-flash-lite", temperature=0.2, google_api_key=api_key)
 
 def get_search_tool():
-    return TavilySearchResults(max_results=5)
+    return TavilySearchResults(max_results=8)
 
 async def async_search(query: str, tool: TavilySearchResults) -> List[Dict[str, Any]]:
     loop = asyncio.get_event_loop()
@@ -163,26 +163,27 @@ SELECTED CATEGORIES: {allowed_types}
 
 MANDATORY RULES:
 1. ONLY return opportunities of type: {allowed_types}. Set `type` to exactly one of these.
-2. You MUST return at least 1 result for EACH selected category: {allowed_types}. This is NOT optional. If a category has weak matches, pick the best available one and note it in the `reason` field.
+2. Return 2-3 results for EACH selected category. Aim for 6-8 total results. This is NOT optional.
 3. Filter out opportunities that a {year} year student is NOT eligible for.
 4. Preferences are SOFT — an amazing remote internship should NOT be rejected just because the student said "On-site".
-5. Focus on the student's CAREER GOAL ({goal}) as the primary filter. Skills ({interests}) are secondary. An opportunity that advances their career goal is more valuable than one that just matches a skill keyword.
+5. Focus on the student's CAREER GOAL ({goal}) as the primary filter. Skills ({interests}) are secondary.
+6. CRITICAL: If the content mentions "applications closed", "registration closed", "deadline passed", "no longer accepting", "expired", "concluded", or any past tense language about applications, DO NOT include that opportunity. Only include opportunities that are currently OPEN for applications.
 
 FIELD FORMATTING RULES:
-- `name`: The specific name of the opportunity (e.g. "Google Summer of Code 2026", not just "Internship").
+- `name`: The specific name of the opportunity (e.g. "Google Summer of Code 2026", not just "Internship"). Include the year if known.
 - `organization`: The company, university, or platform hosting this opportunity (e.g. "Google", "IIT Bombay", "Unstop"). NEVER leave this empty.
-- `link`: Use the EXACT URL from the search results that points to the SPECIFIC opportunity page. REJECT any URL that is a generic company careers page, a search results page, or a listing page with filters. The user must land on the specific opportunity when they click.
+- `link`: Use the EXACT URL from the search results that points to the SPECIFIC opportunity page. REJECT any URL that is a generic company careers page, a search results page, a blog post listing multiple opportunities, or a listing page with filters. The user must land on the specific opportunity when they click.
 - `description`: 2-3 sentences explaining what the program is, what participants do, eligibility, and what they gain.
 - `reason`: ONE sentence explaining why this specific opportunity matches this student's career goal of becoming a {goal}.
 - `deadline`: Extract the specific date from the content (e.g. "30 Jun 2026"). If the opportunity is always open, use "Rolling". If it's a self-paced course, use "Self-paced". NEVER use "Unclear" or "TBD".
 - `time_commitment`: Extract duration if available (e.g. "2 months", "6 weeks", "Self-paced").
 
 QUALITY CRITERIA:
-1. Hackathons & Competitions: Prefer well-known hosts with a track record. Drop anything that looks spammy or low-effort.
-2. Internships: Prefer trustworthy companies. For startups, only include if the description shows real mentorship and skill-building, not cheap labor.
+1. Hackathons: Prefer well-known hosts with a track record. Drop anything spammy or low-effort.
+2. Internships: Prefer trustworthy companies. Drop cheap labor disguised as internships.
 3. Certifications: Only keep certifications with actual industry recognition (e.g. from Google, AWS, Microsoft, Coursera specializations, NPTEL).
 
-Always return a minimum of 3 results total. Never return zero results.
+Return 6-8 results total. Never return fewer than 3.
 
 Return the valid opportunities formatted as a JSON list."""
 
