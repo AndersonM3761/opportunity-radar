@@ -2,7 +2,7 @@ import os
 import asyncio
 import re
 from typing import List, Dict, Any
-from langchain_groq import ChatGroq
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_community.tools.tavily_search import TavilySearchResults
 from app.models.schemas import Opportunity, OpportunityList, SearchStrategy
 from app.agent.verifier import filter_raw_results
@@ -12,8 +12,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 def get_llm():
-    api_key = os.environ.get("GROQ_API_KEY")
-    return ChatGroq(model="llama3-70b-8192", temperature=0.2, groq_api_key=api_key)
+    api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+    return ChatGoogleGenerativeAI(model="gemini-2.5-flash-lite", temperature=0.2, google_api_key=api_key)
 
 def get_search_tool():
     return TavilySearchResults(max_results=5)
@@ -105,45 +105,9 @@ async def process_profile(profile_dict: dict) -> OpportunityList:
     
     pref_context = "\n    ".join(pref_lines) if pref_lines else "No specific preferences — show the best opportunities available across India."
 
-    # STAGE 1: Strategize
-    strategy_prompt = f"""You are an expert career and opportunity researcher for Indian university students.
-CAREFULLY CORRECT ANY TYPOS OR MISSPELLINGS in the branch or interests before processing (e.g. "CSE DATA SCIENCE" -> "Computer Science with Data Science", "AI ML" -> "Artificial Intelligence and Machine Learning", "ELECTRONIC AND COMMUNICATION I" -> "Electronics and Communication Engineering").
-
-STUDENT PROFILE:
-- Branch: {branch}
-- Year: {year}
-- Interests: {interests}
-- Career Goal: {goal}
-
-SOFT PREFERENCES (use as guidance, NOT hard filters):
-{pref_context}
-
-SELECTED CATEGORIES: {', '.join(categories)}
-
-Your job is to generate EXACTLY {len(categories)} highly specific Google Dork search queries, EXACTLY ONE for each category they selected.
-Do NOT skip any selected category. If they selected Internship or Competition, you MUST generate a query for it.
-
-CATEGORY-SPECIFIC QUERY RULES:
-- HACKATHON queries: Search platforms like Unstop, Devpost, HackerEarth. Include both online and offline hackathons. Target 2026.
-- INTERNSHIP queries: Search Internshala, LinkedIn Jobs, Unstop. Include the student's specific interests in the query. Target current openings.
-- CERTIFICATION queries: Search Coursera, NPTEL, Google Cloud, AWS, Microsoft Learn. Find certifications that directly add value for their career goal.
-- COMPETITION queries: Search Unstop, HackerEarth, Kaggle, CodeChef. Find coding/case/research competitions relevant to their branch.
-
-IMPORTANT: Each query must include the student's specific interests (like "{interests}") — do NOT generate generic queries like "hackathon India 2026". Make them specific to this student's profile.
-
-Target Indian sites where possible (e.g., site:internshala.com, site:unstop.com, site:devpost.com, site:hackerearth.com).
-
-Return your answer strictly matching the required JSON schema."""
-    
-    strategy_llm = llm.with_structured_output(SearchStrategy)
-    try:
-        strategy_res = await invoke_with_retry(strategy_llm, strategy_prompt)
-        queries = strategy_res.queries
-        print(f"Strategist generated queries (LLM): {queries}")
-    except Exception as e:
-        print(f"Error in Strategist after retries: {e}")
-        queries = build_fallback_queries(profile_dict, categories)
-        print(f"Using fallback queries: {queries}")
+    # STAGE 1: Build search queries (template-based to save API quota for the Evaluator)
+    queries = build_fallback_queries(profile_dict, categories)
+    print(f"Search queries: {queries}")
 
     # STAGE 2: Search (parallel)
     search_tasks = [async_search(q, search_tool) for q in queries]
