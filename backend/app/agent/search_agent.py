@@ -2,7 +2,7 @@ import os
 import asyncio
 import re
 from typing import List, Dict, Any
-from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_groq import ChatGroq
 from langchain_community.tools.tavily_search import TavilySearchResults
 from app.models.schemas import Opportunity, OpportunityList, SearchStrategy
 from app.agent.verifier import filter_raw_results
@@ -12,8 +12,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 def get_llm():
-    api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
-    return ChatGoogleGenerativeAI(model="gemini-1.5-flash", temperature=0.2, google_api_key=api_key)
+    api_key = os.environ.get("GROQ_API_KEY")
+    return ChatGroq(model="llama3-70b-8192", temperature=0.2, groq_api_key=api_key)
 
 def get_search_tool():
     return TavilySearchResults(max_results=5)
